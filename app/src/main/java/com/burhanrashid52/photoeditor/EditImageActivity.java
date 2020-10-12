@@ -110,7 +110,6 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
                 //.setDefaultTextTypeface(mTextRobotoTf)
                 //.setDefaultEmojiTypeface(mEmojiTypeFace)
                 .build(); // build photo editor sdk
-
         mPhotoEditor.setOnPhotoEditorListener(this);
 
         //Set Image Dynamically

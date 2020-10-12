@@ -1,11 +1,14 @@
 package ja.burhanrashid52.photoeditor;
 
 import android.graphics.Rect;
-import androidx.annotation.Nullable;
+import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -16,14 +19,14 @@ import android.widget.RelativeLayout;
  * <p></p>
  */
 class MultiTouchListener implements OnTouchListener {
-
+    public static float des;
     private static final int INVALID_POINTER_ID = -1;
     private final GestureDetector mGestureListener;
     private boolean isRotateEnabled = true;
     private boolean isTranslateEnabled = true;
     private boolean isScaleEnabled = true;
-    private float minimumScale = 0.5f;
-    private float maximumScale = 10.0f;
+    private float minimumScale = 0f;
+    private float maximumScale = 200.0f;
     private int mActivePointerId = INVALID_POINTER_ID;
     private float mPrevX, mPrevY, mPrevRawX, mPrevRawY;
     private ScaleGestureDetector mScaleGestureDetector;
@@ -31,6 +34,12 @@ class MultiTouchListener implements OnTouchListener {
     private int[] location = new int[2];
     private Rect outRect;
     private View deleteView;
+    private View scaleView;
+    private View flipView;
+    private View frmBorder;
+    private int heightRoot = 0;
+    private int widthRoot = 0;
+    private View rootView;
     private ImageView photoEditImageView;
     private RelativeLayout parentView;
 
@@ -39,22 +48,34 @@ class MultiTouchListener implements OnTouchListener {
     private boolean mIsTextPinchZoomable;
     private OnPhotoEditorListener mOnPhotoEditorListener;
 
-    MultiTouchListener(@Nullable View deleteView, RelativeLayout parentView,
+    MultiTouchListener(View rootView, RelativeLayout parentView,
                        ImageView photoEditImageView, boolean isTextPinchZoomable,
                        OnPhotoEditorListener onPhotoEditorListener) {
         mIsTextPinchZoomable = isTextPinchZoomable;
         mScaleGestureDetector = new ScaleGestureDetector(new ScaleGestureListener());
         mGestureListener = new GestureDetector(new GestureListener());
-        this.deleteView = deleteView;
+        des = rootView.getContext().getResources().getDisplayMetrics().density;
+        heightRoot = new Integer(rootView.getHeight());
+        widthRoot = new Integer(rootView.getWidth());
+        this.rootView = rootView;
         this.parentView = parentView;
         this.photoEditImageView = photoEditImageView;
         this.mOnPhotoEditorListener = onPhotoEditorListener;
+        this.deleteView = rootView.findViewById(R.id.imgPhotoEditorClose);
+        this.flipView = rootView.findViewById(R.id.imgPhotoEditorFlip);
+        this.scaleView = rootView.findViewById(R.id.imgPhotoEditorResize);
+        this.frmBorder = rootView.findViewById(R.id.frmBorder);
+        setScaleByResizeImage(scaleView);
         if (deleteView != null) {
             outRect = new Rect(deleteView.getLeft(), deleteView.getTop(),
                     deleteView.getRight(), deleteView.getBottom());
         } else {
             outRect = new Rect(0, 0, 0, 0);
         }
+    }
+
+    private void setScaleByResizeImage(View scaleView) {
+
     }
 
     private static float adjustAngle(float degrees) {
@@ -67,7 +88,7 @@ class MultiTouchListener implements OnTouchListener {
         return degrees;
     }
 
-    private static void move(View view, TransformInfo info) {
+    private void move(View view, TransformInfo info) {
         computeRenderOffset(view, info.pivotX, info.pivotY);
         adjustTranslation(view, info.deltaX, info.deltaY);
 
@@ -75,12 +96,30 @@ class MultiTouchListener implements OnTouchListener {
         scale = Math.max(info.minimumScale, Math.min(info.maximumScale, scale));
         view.setScaleX(scale);
         view.setScaleY(scale);
-
+        if (deleteView != null) {
+            deleteView.setScaleX(1 / scale);
+            deleteView.setScaleY(1 / scale);
+            Log.e("TAG00000000000", "move: " + scale+"   " + rootView.getHeight());
+            deleteView.invalidate();
+            Log.e("deleteView", "move: " + deleteView.getLayoutParams().width / des);
+        }
+        if (flipView != null) {
+            flipView.setScaleX(1 / scale);
+            flipView.setScaleY(1 / scale);
+        }
+        if (scaleView != null) {
+            scaleView.setScaleX(1 / scale);
+            scaleView.setScaleY(1 / scale);
+        }
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.setMargins((int) (15*des / scale), (int) (15*des / scale), (int) (15*des / scale), (int) (15*des / scale));
+        frmBorder.setLayoutParams(layoutParams);
         float rotation = adjustAngle(view.getRotation() + info.deltaAngle);
         view.setRotation(rotation);
     }
 
     private static void adjustTranslation(View view, float deltaX, float deltaY) {
+        Log.e("adjustTranslation", "adjustTranslation: " + deltaX + "-----" + deltaY);
         float[] deltaVector = {deltaX, deltaY};
         view.getMatrix().mapVectors(deltaVector);
         view.setTranslationX(view.getTranslationX() + deltaVector[0]);
@@ -129,9 +168,9 @@ class MultiTouchListener implements OnTouchListener {
                 mPrevRawX = event.getRawX();
                 mPrevRawY = event.getRawY();
                 mActivePointerId = event.getPointerId(0);
-                if (deleteView != null) {
-                    deleteView.setVisibility(View.VISIBLE);
-                }
+//                if (deleteView != null) {
+//                    deleteView.setVisibility(View.VISIBLE);
+//                }
                 view.bringToFront();
                 firePhotoEditorSDKListener(view, true);
                 break;
@@ -156,9 +195,9 @@ class MultiTouchListener implements OnTouchListener {
                 } else if (!isViewInBounds(photoEditImageView, x, y)) {
                     view.animate().translationY(0).translationY(0);
                 }
-                if (deleteView != null) {
-                    deleteView.setVisibility(View.GONE);
-                }
+//                if (deleteView != null) {
+//                    deleteView.setVisibility(View.GONE);
+//                }
                 firePhotoEditorSDKListener(view, false);
                 break;
             case MotionEvent.ACTION_POINTER_UP:

@@ -1,21 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/imgPhotoEditorClose"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_gravity="top|start"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignLeft="@id/frmBorder"
+        android:layout_alignTop="@id/frmBorder"
+        android:layout_marginTop="-15dp"
+        android:layout_marginLeft="-15dp"
         android:elevation="1dp"
         android:src="@drawable/ic_remove" />
 
+    <ImageView
+        android:id="@+id/imgPhotoEditorFlip"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignRight="@id/frmBorder"
+        android:layout_alignTop="@id/frmBorder"
+        android:layout_marginTop="-15dp"
+        android:layout_marginRight="-15dp"
+        android:elevation="1dp"
+
+        android:src="@drawable/ic_flip" />
+
+    <ImageView
+        android:id="@+id/imgPhotoEditorResize"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignRight="@id/frmBorder"
+        android:layout_alignBottom="@id/frmBorder"
+        android:layout_marginBottom="-15dp"
+        android:layout_marginRight="-15dp"
+        android:elevation="1dp"
+        android:src="@drawable/ic_scale" />
+
     <FrameLayout
         android:id="@+id/frmBorder"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="8dp"
+        android:layout_margin="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
         android:background="@drawable/rounded_border_tv">
 
         <ImageView
@@ -30,5 +57,4 @@
             android:src="@drawable/ic_remove" />
 
     </FrameLayout>
-
-</FrameLayout>
+</RelativeLayout>
